@@ -1,16 +1,9 @@
-import firebase from "firebase";
+import firebase from "../configs/firebase";
 
-// firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyAclgqrbkSKHvlcgyiCgPChDwsILkXvot4",
-  authDomain: "rockclimbingtracker.firebaseapp.com",
-  databaseURL: "https://rockclimbingtracker.firebaseio.com",
-  projectId: "rockclimbingtracker",
-  storageBucket: "rockclimbingtracker.appspot.com"
-};
+//firestore
+const db = firebase.firestore();
 
-export const firebaseApp = firebase.initializeApp(firebaseConfig);
-export const firebaseDb = firebaseApp.database();
+export const firebaseDb = firebase.database();
 
 //Import login function from api
 
@@ -42,28 +35,6 @@ const getTodayDate = () => {
 //For debug
 let userId = "";
 
-// export const addBoulderRoute = (key, boulderHistory) => {
-//   if (firebase.auth().currentUser !== null) {
-//     userId = firebase.auth().currentUser.uid;
-//   }
-
-//   //Get todays date
-//   let todaysDate = getTodayDate();
-//   return dispatch => {
-//     var newKey = firebaseDb
-//       .ref(`${userId}/boulder/${todaysDate}`)
-//       .push({
-//         ...boulderHistory
-//       })
-//       .catch(error =>
-//         dispatch({
-//           type: "ADD_BOULDER_ROUTE_ERROR",
-//           message: error.message
-//         })
-//       );
-//   };
-// };
-
 export const addBoulderRoute = data => {
   //deleted error checking
   //get logged in user ID
@@ -73,17 +44,10 @@ export const addBoulderRoute = data => {
   let todayDate = getTodayDate();
 
   return dispatch => {
-    var myRef = firebaseDb.ref(`${userId}/boulder/${todayDate}`).push();
-    var key = myRef.key;
-
-    var newData = {
-      key: key,
+    db.collection("boulder").add({
       grade: data.grade,
       numOfClimb: data.numOfClimb
-    };
-
-    myRef.set(newData);
-    //console.log(newData);
+    });
   };
 };
 
@@ -92,23 +56,23 @@ export const fetchData = () => async dispatch => {
     userId = firebase.auth().currentUser.uid;
   }
   //TODO: Need to change this to newest top 5 climbs
-  let date = "2019-6-8";
+  let date = "2019-6-17";
 
-  var leadsRef = firebaseDb.ref(`${userId}/boulder/${date}`);
-  leadsRef.on("value", snapshot => {
-    var items = [];
-    // get children as an array
-    snapshot.forEach(child => {
-      //console.log(child.key, child.val());
-      items.push({
-        key: child.val().key,
-        grade: child.val().grade,
-        numOfClimb: child.val().numOfClimb
+  var wholeData = [];
+
+  db.collection("boulder")
+    .get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        wholeData.push(doc.data());
+      });
+      console.log(wholeData);
+    })
+    .catch(error => {
+      console.log("Error!", error);
+      dispatch({
+        type: FETCH_FIREBASE_DATA,
+        payload: items
       });
     });
-    dispatch({
-      type: FETCH_FIREBASE_DATA,
-      payload: items
-    });
-  });
 };

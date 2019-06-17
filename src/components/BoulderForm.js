@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { Button, TextInput, StyleSheet } from "react-native";
-import { Container, Header, Content, Icon, Picker, Form } from "native-base";
+import { Container, Icon, Picker, Form } from "native-base";
 
-import { addBoulderRoute, fetchData } from "../redux/actions";
+import { addBoulderRoute } from "../redux/actions";
 import { connect } from "react-redux";
 
 // Climbing grades

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { fetchData, firebaseDb } from "../redux/actions";
 
 import ChartKit from "./ChartKit";
@@ -8,6 +8,8 @@ import BoulderForm from "./BoulderForm";
 import { connect } from "react-redux";
 
 import firebase from "firebase";
+//firestore
+const db = firebase.firestore();
 
 class BoulderList extends Component {
   state = {
@@ -20,6 +22,7 @@ class BoulderList extends Component {
 
   fetchDataFromFirebase = () => {
     this.fetchDataDebug();
+
     // const result = this.props.fetchData();
     //console.log(result);
     // this.setState({ dataList: result } /*console.log(this.state.dataList)*/);
@@ -30,23 +33,21 @@ class BoulderList extends Component {
     if (firebase.auth().currentUser !== null) {
       userId = firebase.auth().currentUser.uid;
     }
-    let date = "2019-6-8";
 
-    var leadsRef = firebaseDb.ref(`${userId}/boulder/${date}`);
-    leadsRef.on("value", snapshot => {
-      var items = [];
-      // get children as an array
-      snapshot.forEach(child => {
-        //console.log(child.key, child.val());
-        items.push({
-          key: child.val().key,
-          grade: child.val().grade,
-          numOfClimb: child.val().numOfClimb
+    var wholeData = [];
+
+    db.collection("boulder")
+      .get()
+      .then(snapshot => {
+        snapshot.forEach(doc => {
+          wholeData.push(doc.data());
         });
+        console.log(wholeData);
+        this.setState({ dataList: wholeData });
+      })
+      .catch(error => {
+        console.log("Error!", error);
       });
-      //console.log(items);
-      this.setState({ dataList: items });
-    });
   };
 
   render() {
